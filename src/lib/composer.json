@@ -1,0 +1,6 @@
+{
+    "require":{
+        "twig/twig":"2.*",
+        "pragmarx/google2fa": "^8.0"
+    }
+}

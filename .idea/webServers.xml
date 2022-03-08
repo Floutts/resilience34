@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="4a0dc0c8-7f7f-4775-918e-dba19df661f0" name="ServeurVente" url="http://login4060@serveur1.arras-sio.com">
+        <fileTransfer host="login4060@serveur1.arras-sio.com" port="4060" rootFolder="/var/www/html" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="4060" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

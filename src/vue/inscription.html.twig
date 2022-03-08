@@ -1,0 +1,42 @@
+{# empty Twig template #}
+{% extends "base.html.twig" %}
+{% block contenu %}
+    {% if form.valide is defined %}
+    {% if form.valide == true %}
+        <h1 class="h3 mb-3 font-weight-normal">Vous êtes inscrit !</h1>
+        <h1 class="h3 mb-3 font-weight-normal">Bienvenue  {{form.prenom}} {{ form.nom }}</h1>
+        <h1 class="h3 mb-3 font-weight-normal">Vous utiliserez "{{ form.email }}" pour vous connecter</h1>
+
+        {% if form.role == 1 %}
+            <h1 class="h3 mb-3 font-weight-normal">Vous êtes administrateur du site</h1>
+        {% else %}
+            <h1 class="h3 mb-3 font-weight-normal">Vous êtes un Etudiant sur ce site </h1>
+        {% endif %}
+        {% else %}
+                <h1 class="h3 mb-3 font-weight-normal">Echec de l'inscription</h1>
+            <h1 class="h3 mb-3 font-weight-normal">Attention {{form.message}}</h1>
+                <h1 class="h3 mb-3 font-weight-normal"><a href="index.php?page=inscription">Retourner sur la page d'inscription</a></h1>
+    {% endif %}
+    {% else %}
+        <h1 class="h3 mb-3 font-weight-normal">Inscrivez-vous gratuitement sur notre site !</h1>
+    <form class="form-signin" action="index.php?page=inscription" method="post" enctype="multipart/form-data">
+        <label for="email" class="sr-only">Email:</label>
+        <input type="email" id="email" name="email" class="form-control" placeholder="Email" required autofocus>
+        <label for="mdp" class="sr-only">Mot de passe:</label>
+        <input type="password" id="mdp" name="mdp" class="form-control" placeholder="Mot de passe" required>
+        <label for="mdp2" class="sr-only">Mot de passe:</label>
+        <input type="password" id="mdp2" name="mdp2" class="form-control" placeholder="Confirmation mot de passe" required>
+        <label for="nom" class="sr-only">Nom</label>
+        <input type="text" id="nom" name="nom" class="form-control" placeholder="Nom" required>
+        <label for="prenom" class="sr-only">Prenom</label>
+        <input type="text" id="prenom" name="prenom" class="form-control" placeholder="Prenom" required>
+        <select class="form-control" id="role" name="role">
+            <option value="1">Administrateur</option>
+            <option value="2" selected>Etudiant</option>
+        </select>
+        <label for="photo" class="sr-only">Photo :</label><input type="file" name="photo" id="photo" class="form-control"/>
+        <h6 style="color:red"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Attention,la taille de votre fichier doit être inférieure à 500ko <i class="fa fa-exclamation-triangle" aria-hidden="true"></i></h6>
+        <button class="btn btn-lg btn-primary btn-block" type="submit" name="btInscrire" id="btInscrire">S'inscrire</button>
+    </form>
+    {% endif %}
+{% endblock %}
