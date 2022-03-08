@@ -3,30 +3,6 @@ function getPage($db)
 {
 
     $lesPages['accueil'] = "actionAccueil;0";
-    $lesPages['apropos'] = "actionApropos;0";
-    $lesPages['profil'] = "actionProfil;0";
-    $lesPages['mentions'] = "actionMentions;0";
-    $lesPages['inscription'] = "actionInscription;0";
-    $lesPages['connexion'] = "actionConnexion;0";
-    $lesPages['ajoutCommentaire'] = "actionAjoutCommentaire;0";
-    $lesPages['listeCommentaire'] = "actionListeCommentaire;0";
-    $lesPages['deconnexion'] = "actionDeconnexion;0";
-    $lesPages['maintenance'] = "actionMaintenance;0";
-    $lesPages['ajoutQuestion'] = "actionAjoutQuestion;1";
-    $lesPages['listeQuestion'] = "actionListeQuestion;1";
-    $lesPages['listeUtilisateur'] = "actionListeUtilisateur;1";
-    $lesPages['modifProfil'] = "actionModifProfil;0";
-    $lesPages['listeTest'] = "actionListeTest;1";
-    $lesPages['ajoutTest'] = "actionAjoutTest;1";
-    $lesPages['question'] = "actionQuestion;0";
-    $lesPages['tests'] = "actionTests;0";
-    $lesPages['modifQuestion'] = "actionModifQuestion;1";
-    $lesPages['modifTest'] = "actionModifTest;1";
-    $lesPages['modifProfilAdmin'] = "actionModifProfilAdmin;1";
-    $lesPages['modifImage'] = "actionModifImage;0";
-    $lesPages['rechercheUtilisateur'] = "actionRechercheUtilisateur;0";
-
-
 
     if ($db != null) {
         if (isset($_GET['page'])) {
@@ -59,9 +35,7 @@ function getPage($db)
             $contenu = $explose[0]; //  Je récupère le contrôleur, car il n’a pas besoin d’avoir un rôle
         }
 
-    } else {
-        $contenu = $lesPages['actionMaintenance'];
-    }
+    } 
     return $contenu;
 }
 ?>
