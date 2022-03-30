@@ -1,6 +1,6 @@
 {# empty Twig template #}
 {% extends "base.html.twig" %}
-{% block image %}
+{% block body %}
 
     {% if form.valide == false %}
         <div class="alert alert-danger h3 mb-3 font-weight-normal" role="alert">
@@ -8,15 +8,27 @@
         </div>
     {% endif %}
 
-    <h1 class="h3 mb-3 font-weight-normal">Connectez-vous !</h1>
-    <form method="POST" class="form-signin">
-        <label for="email" class="sr-only">Email:</label>
-        <input type="email" id="email" name="email" class="form-control" placeholder="Email" required autofocus>
-        <label for="mdp" class="sr-only">Mot de passe:</label>
-        <input type="password" name="mdp" id="mdp" class="form-control" placeholder="Mot de passe" required>
-        <button class="btn btn-sm btn-primary btn-block" type="submit" name="btConnexion">Se connecter</button>
-        <input type="hidden" name="etape" id="etape" value="{% if etape is defined %}{{etape}}{% else %}1{% endif %}">
+    {{etape}}
 
-    </form>
-    
+    {% if etape is defined %}
+        {% if etape == 2 %}}
+            <h1 class="h3 mb-3 font-weight-normal">Entrez le code Google Authenticator :</h1>
+            <form method="POST" class="form-signin">
+                <label for="code" class="sr-only">Code:</label>
+                <input type="code" id="code" name="code" class="form-control" placeholder="Code" required autofocus>
+                <button class="btn btn-sm btn-primary btn-block" type="submit" name="btConnexion">Vérifier le code</button>
+                <input type="hidden" name="etape" id="etape" value="2">
+            </form>
+        {% elseif etape == 3 %}
+            <p> Vous êtes connecté </p>
+        {% else %}
+            <h1 class="h3 mb-3 font-weight-normal">Connectez-vous !</h1>
+            <form method="POST" class="form-signin">
+                <label for="username" class="sr-only">Nom d'utilisateur:</label>
+                <input type="username" id="username" name="username" class="form-control" placeholder="Nom d'utilisateur" required autofocus>
+                <button class="btn btn-sm btn-primary btn-block" type="submit" name="btConnexion">Se connecter</button>
+                <input type="hidden" name="etape" id="etape" value="1">
+            </form>
+        {% endif %}
+    {% endif %}    
 {% endblock %}
