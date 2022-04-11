@@ -1,6 +1,6 @@
 <?php
 $config['serveur'] = 'localhost';
-$config['login'] = 'login4060';
-$config['mdp'] = 'ermsZqJIUvcQzTw';
+$config['login'] = 'login4061';
+$config['mdp'] = 'CHohAQLpbbYXomb';
 $config['bd'] = 'resilience34';
 ?>

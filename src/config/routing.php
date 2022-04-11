@@ -3,6 +3,7 @@ function getPage($db)
 {
 
     $lesPages['accueil'] = "actionAccueil;0";
+    $lesPages['validation'] = "actionValidation;0";
 
     if ($db != null) {
         if (isset($_GET['page'])) {
@@ -36,6 +37,7 @@ function getPage($db)
         }
 
     } 
+    // $contenu = 'actionAccueil'; 
     return $contenu;
 }
 ?>

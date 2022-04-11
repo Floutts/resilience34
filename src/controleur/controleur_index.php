@@ -14,6 +14,7 @@ function detection_nav() {
     //phpinfo();
 }
 
+// Provenance de l'adresse IP
 function getLocationInfoByIp(){
     $client  = @$_SERVER['HTTP_CLIENT_IP'];
     $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
@@ -43,9 +44,14 @@ function smtpMailer($to, $subject, $body) {
 function actionAccueil($twig,$db){
     $form = array();
     $form['valide'] = true;
-    $email = "maxence.maziere@epsi.fr";
+    $ip = getLocationInfoByIp();
+    $country = $ip['country'];
+    $nbUnique = uniqid();
+
+    if ($country == 'FR'){   
+    //$email = 'fabienbayon@yahoo.fr';
     $etape = isset($_POST['etape']) ? $_POST['etape'] : 1;
-    echo $etape;
+    echo "etape : ";
     if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
         $ip = $_SERVER['HTTP_CLIENT_IP'];
     } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
@@ -55,9 +61,10 @@ function actionAccueil($twig,$db){
     }
 
     if (isset($_POST['btConnexion']) && $etape == 1){
+        $email = $_POST['username']; // on recupere l'email saisie
         $utilisateur = new Utilisateur($db);
-        $unUtilisateur = $utilisateur->selectByUsername($_POST['username']);
 
+        $unUtilisateur = $utilisateur->selectByUsername($email);
         if(/* utilisateur dans ADDS */ true && $unUtilisateur == null){
 
              # Include packages
@@ -70,19 +77,31 @@ function actionAccueil($twig,$db){
             # The application needs to persist this somewhere safely where other users can't get it.
             $userSecret = $google2fa->generateSecretKey();
 
-            $exec = $utilisateur->insert($_POST['username'],$ip,detection_nav(),"maziere.maxence@gmail.com",$userSecret);
+            $exec = $utilisateur->insert($email,$ip,detection_nav(),"fabienbayon@yahoo.fr",$userSecret, $nbUnique);
             if($exec){
-                echo 'utilisateur inséré';
+                $form['valide'] = false;
+                $form['message'] = 'Votre utilisateur est bien inséré, veuillez regarder vos mails';
                 $_SESSION['username'] = $unUtilisateur['username'];
-                $result = smtpmailer($email, 'resilience34.LeChatelet@gmail.com', 'Resilience34', 'Code Google Authenticator', iconv("utf-8","iso-8859-1","Pour vous connecter au site, veuillez saisir la clé suivante dans l'application Google Authenticator : ".$userSecret." \r\nEntrez ensuite le code à 6 chiffres sur l'application lorsque demandé sur le site."));
-                if (true !== $result)
-                {
-                    // erreur -- traiter l'erreur
-                    echo $result;
-                }
-                //sendMail($email,"Code Google Authenticator Resilience34","Pour vous connecter au site, veuillez saisir la clé suivante dans l'application Google Authenticator : $userSecret <br> Entrez ensuite le code à 6 chiffres sur l'application lorsque demandé sur le site.");
-            }else{
-                echo 'erreur';
+                $serveur = $_SERVER['HTTP_HOST'];
+                $script = $_SERVER["SCRIPT_NAME"];
+                $message = "
+                <html>
+                    <head>
+                    Nous venons de detecter qu'il s'agit de votre premiere connexion.
+                    \n Pour vous connecter au site, veuillez saisir la clee suivante dans l'application Google Authenticator : " .$userSecret. "  
+                    </head>
+                    <body>
+                    Entrez ensuite le code a 6 chiffres sur l'application lorsque celui-ci est demande par le site.   
+                    \n Pour toutes questions supplementaire, veuillez vous referer a la documentation sur l'authentification a double facteur.    
+                    </body>
+                </html>
+                 ";
+                $headers[] = 'MIME-Version: 1.0';
+                $headers[] = 'Content-type: text/html; charset=iso-8859-1';
+                mail($email, 'Google Athenticator Resilience34', $message, implode("\n",$headers));
+           }else{
+            $form['valide'] = false;
+            $form['message'] = 'Problème d\'insertion dans la base de données';
             }
 
         }elseif(/* utilisateur dans ADDS */ true && $unUtilisateur != null){
@@ -94,7 +113,8 @@ function actionAccueil($twig,$db){
         $ip = getLocationInfoByIp();
         $utilisateur = new Utilisateur($db);
         $unUtilisateur = $utilisateur->selectByUsername($_SESSION['username']);
-        
+        $nbUnique = $unUtilisateur['uniqid'];
+        $email = $_SESSION['username'];
         # Include packages
         require_once(__DIR__ . '/../lib/vendor/autoload.php');
 
@@ -115,29 +135,55 @@ function actionAccueil($twig,$db){
             echo "Authentication PASSED!";
             $etape = 3;
             if($unUtilisateur['ip_address'] != $ip['ip_address']){
-                echo "l'adresse ip est différente de celle de votre 1ere connexion";
-                $result = smtpmailer('destinataire@mail.com', 'votreEmail@mail.com', 'votreNom', 'Votre Message', 'Le sujet de votre message');
-                if (true !== $result)
-                {
-                    // erreur -- traiter l'erreur
-                    echo $result;
-                }
-                //sendMail($email,"Resilience34 : Adresse Ip différente de d'habitude","Bonjour, Un appareil avec une adresse IP différente vient de se connecter sur votre session, merci de vérifier son authenticité.");
-            }elseif($unUtilisateur['browser'] != detection_nav()){
-                echo "le navigateur est différent de celui de votre 1ere connexion";
-                $result = smtpmailer('destinataire@mail.com', 'votreEmail@mail.com', 'votreNom', 'Votre Message', 'Le sujet de votre message');
-if (true !== $result)
-{
-	// erreur -- traiter l'erreur
-	echo $result;
-}
-                //sendMail($email,"Resilience34 : Navigateur différent de d'habitude","Bonjour, Un appareil utilisant un navigateur différent vient de se connecter sur votre session, merci de vérifier son authenticité.");
-                $etape = 1;
+                $serveur = $_SERVER['HTTP_HOST'];
+                $script = $_SERVER["SCRIPT_NAME"];
+                $message = "
+                <html>
+                    <head>
+                    Attention, nous venons de detecter une connexion via un nouvel appareil
+                    </head>
+                    <body>
+                    Voici l'addresse IP de celui-ci : " + $ip['ip_address'] + "
+                    Si ce n'est pas vous, veuillez le signaler au plus vite
+                    </body>
+                </html>
+                 ";
+                $headers[] = 'MIME-Version: 1.0';
+                $headers[] = 'Content-type: text/html; charset=iso-8859-1';
+                mail($email, 'Information Resilience34', $message, implode("\n",$headers));
+                $form['valide'] = false;
+                $form['message'] = 'l\'adresse ip est différente de celle de votre 1ere connexion';
             }
+            if($unUtilisateur['browser'] != detection_nav()){
+                $serveur = $_SERVER['HTTP_HOST'];
+                $script = $_SERVER["SCRIPT_NAME"];
+                $message = "
+                <html>
+                    <head>
+                    Bonjour, nous avons detecter une connexion via un navigateur different,
+                    </head>
+                    <body>
+                        Veuillez confirmer votre identite en cliquant sur le lien ci dessous pour continuer :
+                    <a href='http://$serveur$script?page=validation&email=$email&nbUnique=$nbUnique'> http://$serveur$script?page=modifMdp&email=$email&nbUnique=$nbUnique </a>
+                    </body>
+                </html>
+                 ";
+                $headers[] = 'MIME-Version: 1.0';
+                $headers[] = 'Content-type: text/html; charset=iso-8859-1';
+                mail($email, 'Information Resilience34', $message, implode("\n",$headers));
+                $etape = 1;
+                $form['valide'] = false;
+                $form['message'] = 'le navigateur est différent de celui de votre 1ere connexion';
+             }
         }else{
             echo "Authentication FAILED!";
+            $form['valide'] = false;
+            $form['message'] = 'Code incorrect';
         }
         print PHP_EOL;
     }
+}else{
+    echo "Pays Different de la france";
+}
     echo $twig->render('index.html.twig',array('form'=>$form,'etape'=>$etape));
 }
