@@ -1,0 +1,10 @@
+{% extends "base.html.twig" %}
+{% block body %}
+
+    {% if form.valide == false %}
+        <div class="alert alert-danger h3 mb-3 font-weight-normal" role="alert">
+            {{ form.message }}
+        </div>
+    {% endif %}
+
+{% endblock %}
