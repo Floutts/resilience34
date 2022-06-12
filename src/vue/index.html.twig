@@ -2,33 +2,38 @@
 {% extends "base.html.twig" %}
 {% block body %}
 
-    {% if form.valide == false %}
-        <div class="alert alert-danger h3 mb-3 font-weight-normal" role="alert">
-            {{ form.message }}
-        </div>
-    {% endif %}
-
-    {{etape}}
-
-    {% if etape is defined %}
-        {% if etape == 2 %}}
-            <h1 class="h3 mb-3 font-weight-normal">Entrez le code Google Authenticator :</h1>
-            <form method="POST" class="form-signin">
-                <label for="code" class="sr-only">Code:</label>
-                <input type="code" id="code" name="code" class="form-control" placeholder="Code" required autofocus>
-                <button class="btn btn-sm btn-primary btn-block" type="submit" name="btConnexion">Vérifier le code</button>
-                <input type="hidden" name="etape" id="etape" value="2">
-            </form>
-        {% elseif etape == 3 %}
-            <p> Vous êtes connecté </p>
-        {% else %}
-            <h1 class="h3 mb-3 font-weight-normal">Connectez-vous !</h1>
-            <form method="POST" class="form-signin">
-                <label for="username" class="sr-only">Nom d'utilisateur: test</label>
-                <input type="username" id="username" name="username" class="form-control" placeholder="Nom d'utilisateur" required autofocus>
-                <button class="btn btn-sm btn-primary btn-block" type="submit" name="btConnexion">Se connecter</button>
-                <input type="hidden" name="etape" id="etape" value="1">
-            </form>
-        {% endif %}
-    {% endif %}    
+	{% if form.valide is defined %}
+		{% if form.valide == false %}
+			<div class="alert alert-danger h3 mb-3 font-weight-normal" role="alert">
+				{{ form.message }}
+			</div>
+		{% else %}
+			<div class="alert alert-success h3 mb-3 font-weight-normal" role="alert">
+				{{ form.message }}
+			</div>
+		{% endif %}
+	{% endif %}
+	{% if etape is defined %}
+		{% if etape == 2 %}
+			<h1 class="h3 mb-3 font-weight-normal">Entrez le code Google Authenticator :</h1>
+			<form method="POST" class="form-signin">
+				<label for="code" class="sr-only">Code:</label>
+				<input type="code" id="code" name="code" class="form-control" placeholder="Code" required autofocus>
+				<button class="btn btn-sm btn-primary btn-block" type="submit" name="btConnexion">Vérifier le code</button>
+				<input type="hidden" name="etape" id="etape" value="2">
+			</form>
+		{% elseif etape == 3 %}
+			<p>
+				Vous êtes connecté
+			</p>
+		{% else %}
+			<h1 class="h3 mb-3 font-weight-normal">Connectez-vous !</h1>
+			<form method="POST" class="form-signin">
+				<label for="username" class="sr-only">Nom d'utilisateur: test</label>
+				<input type="username" id="username" name="username" class="form-control" placeholder="Nom d'utilisateur" required autofocus>
+				<button class="btn btn-sm btn-primary btn-block" type="submit" name="btConnexion">Se connecter</button>
+				<input type="hidden" name="etape" id="etape" value="1">
+			</form>
+		{% endif %}
+	{% endif %}
 {% endblock %}

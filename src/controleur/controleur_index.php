@@ -9,8 +9,10 @@ define('GMailUser', 'resilience34.LeChatelet@gmail.com'); // utilisateur Gmail
 define('GMailPWD', 'resilience34'); // Mot de passe Gmail
 
 function detection_nav() {
-    $browser = get_browser(null, true);
-    return $browser['browser'];
+    // $browser = get_browser(null, true);
+    $browser = 'chrome';
+    //return $browser['browser'];
+    return $browser;
     //phpinfo();
 }
 
@@ -43,15 +45,12 @@ function smtpMailer($to, $subject, $body) {
 
 function actionAccueil($twig,$db){
     $form = array();
-    $form['valide'] = true;
     $ip = getLocationInfoByIp();
     $country = $ip['country'];
     $nbUnique = uniqid();
-
     if ($country == 'FR'){   
     //$email = 'fabienbayon@yahoo.fr';
     $etape = isset($_POST['etape']) ? $_POST['etape'] : 1;
-    echo "etape : ";
     if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
         $ip = $_SERVER['HTTP_CLIENT_IP'];
     } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
@@ -88,11 +87,11 @@ function actionAccueil($twig,$db){
                 <html>
                     <head>
                     Nous venons de detecter qu'il s'agit de votre premiere connexion.
-                    \n Pour vous connecter au site, veuillez saisir la clee suivante dans l'application Google Authenticator : " .$userSecret. "  
+                    \n Pour vous connecter au site, veuillez saisir la cle suivante dans l'application Google Authenticator : " .$userSecret. "  
                     </head>
                     <body>
                     Entrez ensuite le code a 6 chiffres sur l'application lorsque celui-ci est demande par le site.   
-                    \n Pour toutes questions supplementaire, veuillez vous referer a la documentation sur l'authentification a double facteur.    
+                    \n Pour toutes questions supplementaires, veuillez vous referer a la documentation sur l'authentification a double facteurs.    
                     </body>
                 </html>
                  ";
@@ -107,6 +106,9 @@ function actionAccueil($twig,$db){
         }elseif(/* utilisateur dans ADDS */ true && $unUtilisateur != null){
             $_SESSION['username'] = $unUtilisateur['username'];
             $etape = 2;
+        }else{
+            $form['valide'] = false;
+            $form['message'] = 'Utilisateur inconnu, veuillez vérifier vos identifiants ou vous rapprocher auprès de votre administrateur';
         }
     }
     elseif(isset($_POST['btConnexion']) && $etape == 2){
@@ -132,18 +134,18 @@ function actionAccueil($twig,$db){
         $valid = $google2fa->verifyKey($userSecret, $code); 
 
         if($valid){
-            echo "Authentication PASSED!";
             $etape = 3;
             if($unUtilisateur['ip_address'] != $ip['ip_address']){
                 $serveur = $_SERVER['HTTP_HOST'];
                 $script = $_SERVER["SCRIPT_NAME"];
+                $adressIP = $ip['ip_address'] ;
                 $message = "
                 <html>
                     <head>
                     Attention, nous venons de detecter une connexion via un nouvel appareil
                     </head>
                     <body>
-                    Voici l'addresse IP de celui-ci : " + $ip['ip_address'] + "
+                    Voici l'addresse IP de celui-ci : " .$adressIP. "
                     Si ce n'est pas vous, veuillez le signaler au plus vite
                     </body>
                 </html>
@@ -153,6 +155,9 @@ function actionAccueil($twig,$db){
                 mail($email, 'Information Resilience34', $message, implode("\n",$headers));
                 $form['valide'] = false;
                 $form['message'] = 'l\'adresse ip est différente de celle de votre 1ere connexion';
+            }else{
+                $form['valide'] = true;
+                $form['message'] = 'Authentification réussie';
             }
             if($unUtilisateur['browser'] != detection_nav()){
                 $serveur = $_SERVER['HTTP_HOST'];
@@ -174,16 +179,19 @@ function actionAccueil($twig,$db){
                 $etape = 1;
                 $form['valide'] = false;
                 $form['message'] = 'le navigateur est différent de celui de votre 1ere connexion';
-             }
+             }else{
+                $form['valide'] = true;
+                $form['message'] = 'Authentification réussie';
+            }
         }else{
-            echo "Authentication FAILED!";
             $form['valide'] = false;
             $form['message'] = 'Code incorrect';
         }
-        print PHP_EOL;
+         print PHP_EOL;
     }
 }else{
-    echo "Pays Different de la france";
+    $form['valide'] = false;
+    $form['message'] = 'Attention, votre localisation est reconnue hors de la France, votre connexion est donc bloquée';
 }
     echo $twig->render('index.html.twig',array('form'=>$form,'etape'=>$etape));
 }

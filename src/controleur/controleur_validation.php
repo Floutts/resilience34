@@ -8,16 +8,21 @@ function actionValidation($twig,$db){
         if ($unUtilisateur!=null){
             if ( $unUtilisateur['uniqid'] == $_GET['nbUnique']){
                 $etape = 3;
+                $form['valide'] = true;
+                $form['message'] = 'Authentification réussie';
             }
             else{
+                $form['valide'] = false;
                 $form['message'] = 'Validation échouée (nbUnique)';
             }
         }
         else{
+            $form['valide'] = false;
             $form['message'] = 'Utilisateur incorrect';
         }
     }
     else{
+        $form['valide'] = false;
         $form['message'] = 'Utilisateur non précisé';
     }
     echo $twig->render('index.html.twig', array('form'=>$form, 'etape'=>$etape));
