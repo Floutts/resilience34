@@ -40,6 +40,15 @@ function smtpMailer($to, $subject, $body) {
     mail($to,$subject,$body);
 }
 
+function isUserInADDS($user,$adds){
+    foreach($adds as $utilisateur){
+        if($utilisateur["samaccountname"][0] == $user){
+            return true;
+        }
+    }
+    return false;
+}
+
 function actionAccueil($twig,$db){
     $form = array();
     $form['valide'] = true;
@@ -54,11 +63,19 @@ function actionAccueil($twig,$db){
         $ip = $_SERVER['REMOTE_ADDR'];
     }
 
+    $adds = [];
+    array_push($adds,array("samaccountname"=>array("count"=>1,0=>"Administrateur"),0=>"samaccountname","count"=>1,"dn"=>"CN=Administrateur,CN=Users,DC=mspr,DC=local"));
+    array_push($adds,array("samaccountname"=>array("count"=>1,0=>"Invité"),0=>"samaccountname","count"=>1,"dn"=>"CN=Invité,CN=Users,DC=mspr,DC=local"));
+    array_push($adds,array("samaccountname"=>array("count"=>1,0=>"DefaultAccount"),0=>"samaccountname","count"=>1,"dn"=>"CN=DefaultAccount,CN=Users,DC=mspr,DC=local"));
+    array_push($adds,array("samaccountname"=>array("count"=>1,0=>"fabienbayon"),0=>"samaccountname","count"=>1,"dn"=>"CN=mspr,CN=Users,DC=mspr,DC=local"));
+    array_push($adds,array("samaccountname"=>array("count"=>1,0=>"maxence.maziere@epsi.fr"),0=>"samaccountname","count"=>1,"dn"=>"CN=Administrateur,CN=Users,DC=mspr,DC=local"));
+
+    var_dump($adds);
     if (isset($_POST['btConnexion']) && $etape == 1){
         $utilisateur = new Utilisateur($db);
         $unUtilisateur = $utilisateur->selectByUsername($_POST['username']);
 
-        if(/* utilisateur dans ADDS */ true && $unUtilisateur == null){
+        if(isUserInADDS($_POST["username"],$adds) && $unUtilisateur == null){
 
              # Include packages
             require_once(__DIR__ . '/../lib/vendor/autoload.php');
@@ -80,14 +97,16 @@ function actionAccueil($twig,$db){
                     // erreur -- traiter l'erreur
                     echo $result;
                 }
-                //sendMail($email,"Code Google Authenticator Resilience34","Pour vous connecter au site, veuillez saisir la clé suivante dans l'application Google Authenticator : $userSecret <br> Entrez ensuite le code à 6 chiffres sur l'application lorsque demandé sur le site.");
+                sendMail($email,"Code Google Authenticator Resilience34","Pour vous connecter au site, veuillez saisir la clé suivante dans l'application Google Authenticator : $userSecret <br> Entrez ensuite le code à 6 chiffres sur l'application lorsque demandé sur le site.");
             }else{
                 echo 'erreur';
             }
 
-        }elseif(/* utilisateur dans ADDS */ true && $unUtilisateur != null){
+        }elseif(isUserInADDS($_POST["username"],$adds) && $unUtilisateur != null){
             $_SESSION['username'] = $unUtilisateur['username'];
             $etape = 2;
+        }else{
+            echo "zetes pas dans l'ADDS sry";
         }
     }
     elseif(isset($_POST['btConnexion']) && $etape == 2){
@@ -122,7 +141,7 @@ function actionAccueil($twig,$db){
                     // erreur -- traiter l'erreur
                     echo $result;
                 }
-                //sendMail($email,"Resilience34 : Adresse Ip différente de d'habitude","Bonjour, Un appareil avec une adresse IP différente vient de se connecter sur votre session, merci de vérifier son authenticité.");
+                sendMail($email,"Resilience34 : Adresse Ip différente de d'habitude","Bonjour, Un appareil avec une adresse IP différente vient de se connecter sur votre session, merci de vérifier son authenticité.");
             }elseif($unUtilisateur['browser'] != detection_nav()){
                 echo "le navigateur est différent de celui de votre 1ere connexion";
                 $result = smtpmailer('destinataire@mail.com', 'votreEmail@mail.com', 'votreNom', 'Votre Message', 'Le sujet de votre message');
@@ -131,7 +150,7 @@ if (true !== $result)
 	// erreur -- traiter l'erreur
 	echo $result;
 }
-                //sendMail($email,"Resilience34 : Navigateur différent de d'habitude","Bonjour, Un appareil utilisant un navigateur différent vient de se connecter sur votre session, merci de vérifier son authenticité.");
+                sendMail($email,"Resilience34 : Navigateur différent de d'habitude","Bonjour, Un appareil utilisant un navigateur différent vient de se connecter sur votre session, merci de vérifier son authenticité.");
                 $etape = 1;
             }
         }else{
