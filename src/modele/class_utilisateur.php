@@ -11,7 +11,7 @@ class Utilisateur
     public function __construct($db)
     {
         $this->db = $db;
-        $this->insert = $db->prepare("INSERT INTO utilisateur(username, ip_address, browser, email, googleKey, tryCount, uniqid) VALUES (:username, :ip_address, :browser, :email,:googleKey, '0', :uniqid)");
+        $this->insert = $db->prepare("INSERT INTO utilisateur(username, ip_address, browser, email, googleKey, uniqid) VALUES (:username, :ip_address, :browser, :email,:googleKey, :uniqid)");
         $this->selectByUsername = $db->prepare("SELECT * FROM utilisateur WHERE username = :username ");
         //$this->updateAddress= $db->prepare("UPDATE resilience34 set address=:address where username=:username ");
     }

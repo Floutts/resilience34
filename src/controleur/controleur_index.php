@@ -56,8 +56,8 @@ function actionAccueil($twig,$db){
     $ip = getLocationInfoByIp();
     $country = $ip['country'];
     $nbUnique = uniqid();
-
-    if ($country == 'FR'){   
+    $etape =1;
+    if ($country == 'FR'or substr($ip['ip_address'],0,5) == "127.0" or substr($ip['ip_address'],0,7) == "192.168"){   
     //$email = 'fabienbayon@yahoo.fr';
     $etape = isset($_POST['etape']) ? $_POST['etape'] : 1;
     echo "etape : ";
@@ -76,7 +76,7 @@ function actionAccueil($twig,$db){
     array_push($adds,array("samaccountname"=>array("count"=>1,0=>"fabienbayon"),0=>"samaccountname","count"=>1,"dn"=>"CN=mspr,CN=Users,DC=mspr,DC=local"));
     array_push($adds,array("samaccountname"=>array("count"=>1,0=>"maxence.maziere@epsi.fr"),0=>"samaccountname","count"=>1,"dn"=>"CN=Administrateur,CN=Users,DC=mspr,DC=local"));
 
-    var_dump($adds);
+   
     if (isset($_POST['btConnexion']) && $etape == 1){
         $email = $_POST['username']; // on recupere l'email saisie
         $utilisateur = new Utilisateur($db);
@@ -93,8 +93,7 @@ function actionAccueil($twig,$db){
             # Print a user secret for user to enter into their phone. 
             # The application needs to persist this somewhere safely where other users can't get it.
             $userSecret = $google2fa->generateSecretKey();
-
-            $exec = $utilisateur->insert($email,$ip,detection_nav(),"fabienbayon@yahoo.fr",$userSecret, $nbUnique);
+            $exec = $utilisateur->insert($email,$ip,detection_nav(),$email,$userSecret, $nbUnique);
             if($exec){
                 $form['valide'] = false;
                 $form['message'] = 'Votre utilisateur est bien inséré, veuillez regarder vos mails';
@@ -125,7 +124,7 @@ function actionAccueil($twig,$db){
             $_SESSION['username'] = $unUtilisateur['username'];
             $etape = 2;
         }else{
-            echo "zetes pas dans l'ADDS sry";
+            echo "Vous etes pas dans l'ADDS";
         }
     }
     elseif(isset($_POST['btConnexion']) && $etape == 2){
