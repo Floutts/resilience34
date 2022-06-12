@@ -43,6 +43,15 @@ function smtpMailer($to, $subject, $body) {
     mail($to,$subject,$body);
 }
 
+function isUserInADDS($user,$adds){
+    foreach($adds as $utilisateur){
+        if($utilisateur["samaccountname"][0] == $user){
+            return true;
+        }
+    }
+    return false;
+}
+
 function actionAccueil($twig,$db){
     $form = array();
     $ip = getLocationInfoByIp();
@@ -59,12 +68,20 @@ function actionAccueil($twig,$db){
         $ip = $_SERVER['REMOTE_ADDR'];
     }
 
+    $adds = [];
+    array_push($adds,array("samaccountname"=>array("count"=>1,0=>"Administrateur"),0=>"samaccountname","count"=>1,"dn"=>"CN=Administrateur,CN=Users,DC=mspr,DC=local"));
+    array_push($adds,array("samaccountname"=>array("count"=>1,0=>"Invité"),0=>"samaccountname","count"=>1,"dn"=>"CN=Invité,CN=Users,DC=mspr,DC=local"));
+    array_push($adds,array("samaccountname"=>array("count"=>1,0=>"DefaultAccount"),0=>"samaccountname","count"=>1,"dn"=>"CN=DefaultAccount,CN=Users,DC=mspr,DC=local"));
+    array_push($adds,array("samaccountname"=>array("count"=>1,0=>"fabienbayon"),0=>"samaccountname","count"=>1,"dn"=>"CN=mspr,CN=Users,DC=mspr,DC=local"));
+    array_push($adds,array("samaccountname"=>array("count"=>1,0=>"maxence.maziere@epsi.fr"),0=>"samaccountname","count"=>1,"dn"=>"CN=Administrateur,CN=Users,DC=mspr,DC=local"));
+
+    var_dump($adds);
     if (isset($_POST['btConnexion']) && $etape == 1){
         $email = $_POST['username']; // on recupere l'email saisie
         $utilisateur = new Utilisateur($db);
 
         $unUtilisateur = $utilisateur->selectByUsername($email);
-        if(/* utilisateur dans ADDS */ true && $unUtilisateur == null){
+        if(isUserInADDS($_POST["username"],$adds) && $unUtilisateur == null){
 
              # Include packages
             require_once(__DIR__ . '/../lib/vendor/autoload.php');
@@ -103,7 +120,7 @@ function actionAccueil($twig,$db){
             $form['message'] = 'Problème d\'insertion dans la base de données';
             }
 
-        }elseif(/* utilisateur dans ADDS */ true && $unUtilisateur != null){
+        }elseif(isUserInADDS($_POST["username"],$adds) && $unUtilisateur != null){
             $_SESSION['username'] = $unUtilisateur['username'];
             $etape = 2;
         }else{
