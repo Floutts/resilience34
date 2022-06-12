@@ -11,15 +11,15 @@ class Utilisateur
     public function __construct($db)
     {
         $this->db = $db;
-        $this->insert = $db->prepare("INSERT INTO utilisateur(username, ip_address, browser, email, googleKey, uniqid) VALUES (:username, :ip_address, :browser, :email,:googleKey, :uniqid)");
-        $this->selectByUsername = $db->prepare("SELECT * FROM utilisateur WHERE username = :username ");
+        $this->insert = $db->prepare("INSERT INTO utilisateur(ip_address, browser, email, googleKey, uniqid) VALUES (:ip_address, :browser, :email,:googleKey, :uniqid)");
+        $this->selectByUsername = $db->prepare("SELECT * FROM utilisateur WHERE email = :username ");
         //$this->updateAddress= $db->prepare("UPDATE resilience34 set address=:address where username=:username ");
     }
  
-    public function insert($username, $ip_address,$browser,$email,$googleKey, $uniqid)
+    public function insert($ip_address,$browser,$email,$googleKey, $uniqid)
     {
         $r = true;
-        $this->insert->execute(array(':username' => $username, ':ip_address' => $ip_address, ':browser' => $browser, ':email' => $email, ':googleKey' => $googleKey, ':uniqid' => $uniqid));
+        $this->insert->execute(array(':ip_address' => $ip_address, ':browser' => $browser, ':email' => $email, ':googleKey' => $googleKey, ':uniqid' => $uniqid));
         if ($this->insert->errorCode() != 0) {
             print_r($this->insert->errorInfo());
             $r = false;

@@ -10,7 +10,9 @@ define('GMailPWD', 'resilience34'); // Mot de passe Gmail
 
 function detection_nav() {
     $browser = get_browser(null, true);
+    //$browser = 'chrome';
     return $browser['browser'];
+    //return $browser;
     //phpinfo();
 }
 
@@ -52,7 +54,6 @@ function isUserInADDS($user,$adds){
 
 function actionAccueil($twig,$db){
     $form = array();
-    $form['valide'] = true;
     $ip = getLocationInfoByIp();
     $country = $ip['country'];
     $nbUnique = uniqid();
@@ -60,7 +61,6 @@ function actionAccueil($twig,$db){
     if ($country == 'FR'or substr($ip['ip_address'],0,5) == "127.0" or substr($ip['ip_address'],0,7) == "192.168"){   
     //$email = 'fabienbayon@yahoo.fr';
     $etape = isset($_POST['etape']) ? $_POST['etape'] : 1;
-    echo "etape : ";
     if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
         $ip = $_SERVER['HTTP_CLIENT_IP'];
     } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
@@ -74,14 +74,14 @@ function actionAccueil($twig,$db){
     array_push($adds,array("samaccountname"=>array("count"=>1,0=>"Invité"),0=>"samaccountname","count"=>1,"dn"=>"CN=Invité,CN=Users,DC=mspr,DC=local"));
     array_push($adds,array("samaccountname"=>array("count"=>1,0=>"DefaultAccount"),0=>"samaccountname","count"=>1,"dn"=>"CN=DefaultAccount,CN=Users,DC=mspr,DC=local"));
     array_push($adds,array("samaccountname"=>array("count"=>1,0=>"fabienbayon"),0=>"samaccountname","count"=>1,"dn"=>"CN=mspr,CN=Users,DC=mspr,DC=local"));
-    array_push($adds,array("samaccountname"=>array("count"=>1,0=>"maxence.maziere@epsi.fr"),0=>"samaccountname","count"=>1,"dn"=>"CN=Administrateur,CN=Users,DC=mspr,DC=local"));
-
+    array_push($adds,array("samaccountname"=>array("count"=>1,0=>"maziere.maxence@gmail.com"),0=>"samaccountname","count"=>1,"dn"=>"CN=Administrateur,CN=Users,DC=mspr,DC=local"));
+    array_push($adds,array("samaccountname"=>array("count"=>1,0=>"antoine.dumont2@epsi.fr"),0=>"samaccountname","count"=>1,"dn"=>"CN=Administrateur,CN=Users,DC=mspr,DC=local"));
    
     if (isset($_POST['btConnexion']) && $etape == 1){
-        $email = $_POST['username']; // on recupere l'email saisie
+        $username = $_POST['username']; // on recupere l'email saisie
         $utilisateur = new Utilisateur($db);
 
-        $unUtilisateur = $utilisateur->selectByUsername($email);
+        $unUtilisateur = $utilisateur->selectByUsername($username);
         if(isUserInADDS($_POST["username"],$adds) && $unUtilisateur == null){
 
              # Include packages
@@ -93,46 +93,47 @@ function actionAccueil($twig,$db){
             # Print a user secret for user to enter into their phone. 
             # The application needs to persist this somewhere safely where other users can't get it.
             $userSecret = $google2fa->generateSecretKey();
-            $exec = $utilisateur->insert($email,$ip,detection_nav(),$email,$userSecret, $nbUnique);
+            $exec = $utilisateur->insert($ip,detection_nav(),$username,$userSecret, $nbUnique);
             if($exec){
                 $form['valide'] = false;
                 $form['message'] = 'Votre utilisateur est bien inséré, veuillez regarder vos mails';
-                $_SESSION['username'] = $unUtilisateur['username'];
+                $_SESSION['email'] = $unUtilisateur['email'];
                 $serveur = $_SERVER['HTTP_HOST'];
                 $script = $_SERVER["SCRIPT_NAME"];
                 $message = "
                 <html>
                     <head>
                     Nous venons de detecter qu'il s'agit de votre premiere connexion.
-                    \n Pour vous connecter au site, veuillez saisir la clee suivante dans l'application Google Authenticator : " .$userSecret. "  
+                    \n Pour vous connecter au site, veuillez saisir la cle suivante dans l'application Google Authenticator : " .$userSecret. "  
                     </head>
                     <body>
                     Entrez ensuite le code a 6 chiffres sur l'application lorsque celui-ci est demande par le site.   
-                    \n Pour toutes questions supplementaire, veuillez vous referer a la documentation sur l'authentification a double facteur.    
+                    \n Pour toutes questions supplementaires, veuillez vous referer a la documentation sur l'authentification a double facteurs.    
                     </body>
                 </html>
                  ";
                 $headers[] = 'MIME-Version: 1.0';
                 $headers[] = 'Content-type: text/html; charset=iso-8859-1';
-                mail($email, 'Google Athenticator Resilience34', $message, implode("\n",$headers));
+                mail($username, 'Google Athenticator Resilience34', $message, implode("\n",$headers));
            }else{
             $form['valide'] = false;
             $form['message'] = 'Problème d\'insertion dans la base de données';
             }
 
         }elseif(isUserInADDS($_POST["username"],$adds) && $unUtilisateur != null){
-            $_SESSION['username'] = $unUtilisateur['username'];
+            $_SESSION['email'] = $unUtilisateur['email'];
             $etape = 2;
         }else{
-            echo "Vous etes pas dans l'ADDS";
+            $form['valide'] = false;
+            $form['message'] = 'Utilisateur inconnu, veuillez vérifier vos identifiants ou vous rapprocher auprès de votre administrateur';
         }
     }
     elseif(isset($_POST['btConnexion']) && $etape == 2){
         $ip = getLocationInfoByIp();
         $utilisateur = new Utilisateur($db);
-        $unUtilisateur = $utilisateur->selectByUsername($_SESSION['username']);
+        $unUtilisateur = $utilisateur->selectByUsername($_SESSION['email']);
         $nbUnique = $unUtilisateur['uniqid'];
-        $email = $_SESSION['username'];
+        $username = $_SESSION['username'];
         # Include packages
         require_once(__DIR__ . '/../lib/vendor/autoload.php');
 
@@ -147,30 +148,34 @@ function actionAccueil($twig,$db){
 
         # Verify the code is correct against our persisted user secret.
         # This returns true if correct, false if not.
+        
         $valid = $google2fa->verifyKey($userSecret, $code); 
 
         if($valid){
-            echo "Authentication PASSED!";
             $etape = 3;
             if($unUtilisateur['ip_address'] != $ip['ip_address']){
                 $serveur = $_SERVER['HTTP_HOST'];
                 $script = $_SERVER["SCRIPT_NAME"];
+                $adressIP = $ip['ip_address'] ;
                 $message = "
                 <html>
                     <head>
                     Attention, nous venons de detecter une connexion via un nouvel appareil
                     </head>
                     <body>
-                    Voici l'addresse IP de celui-ci : " + $ip['ip_address'] + "
+                    Voici l'addresse IP de celui-ci : " .$adressIP. "
                     Si ce n'est pas vous, veuillez le signaler au plus vite
                     </body>
                 </html>
                  ";
                 $headers[] = 'MIME-Version: 1.0';
                 $headers[] = 'Content-type: text/html; charset=iso-8859-1';
-                mail($email, 'Information Resilience34', $message, implode("\n",$headers));
+                mail($username, 'Information Resilience34', $message, implode("\n",$headers));
                 $form['valide'] = false;
                 $form['message'] = 'l\'adresse ip est différente de celle de votre 1ere connexion';
+            }else{
+                $form['valide'] = true;
+                $form['message'] = 'Authentification réussie';
             }
             if($unUtilisateur['browser'] != detection_nav()){
                 $serveur = $_SERVER['HTTP_HOST'];
@@ -182,26 +187,29 @@ function actionAccueil($twig,$db){
                     </head>
                     <body>
                         Veuillez confirmer votre identite en cliquant sur le lien ci dessous pour continuer :
-                    <a href='http://$serveur$script?page=validation&email=$email&nbUnique=$nbUnique'> http://$serveur$script?page=modifMdp&email=$email&nbUnique=$nbUnique </a>
+                    <a href='http://$serveur$script?page=validation&username=$username&nbUnique=$nbUnique'> http://$serveur$script?page=modifMdp&username=$username&nbUnique=$nbUnique </a>
                     </body>
                 </html>
                  ";
                 $headers[] = 'MIME-Version: 1.0';
                 $headers[] = 'Content-type: text/html; charset=iso-8859-1';
-                mail($email, 'Information Resilience34', $message, implode("\n",$headers));
+                mail($username, 'Information Resilience34', $message, implode("\n",$headers));
                 $etape = 1;
                 $form['valide'] = false;
                 $form['message'] = 'le navigateur est différent de celui de votre 1ere connexion';
-             }
+             }else{
+                $form['valide'] = true;
+                $form['message'] = 'Authentification réussie';
+            }
         }else{
-            echo "Authentication FAILED!";
             $form['valide'] = false;
             $form['message'] = 'Code incorrect';
         }
-        print PHP_EOL;
+         print PHP_EOL;
     }
 }else{
-    echo "Pays Different de la france";
+    $form['valide'] = false;
+    $form['message'] = 'Attention, votre localisation est reconnue hors de la France, votre connexion est donc bloquée';
 }
     echo $twig->render('index.html.twig',array('form'=>$form,'etape'=>$etape));
 }
