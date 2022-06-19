@@ -3,7 +3,10 @@ function getPage($db)
 {
 
     $lesPages['accueil'] = "actionAccueil;0";
+    $lesPages['connexion'] = "actionConnexion;0";
     $lesPages['validation'] = "actionValidation;0";
+    $lesPages['mention'] = "actionMention;0";
+    $lesPages['aPropos'] = "actionaPropos;0";
 
     if ($db != null) {
         if (isset($_GET['page'])) {

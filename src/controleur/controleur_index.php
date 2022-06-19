@@ -52,7 +52,7 @@ function isUserInADDS($user,$adds){
     return false;
 }
 
-function actionAccueil($twig,$db){
+function actionConnexion($twig,$db){
     $form = array();
     $ip = getLocationInfoByIp();
     $country = $ip['country'];
@@ -75,7 +75,7 @@ function actionAccueil($twig,$db){
     array_push($adds,array("samaccountname"=>array("count"=>1,0=>"fabienbayon"),0=>"samaccountname","count"=>1,"dn"=>"CN=mspr,CN=Users,DC=mspr,DC=local"));
     array_push($adds,array("samaccountname"=>array("count"=>1,0=>"maxence.maziere@epsi.fr"),0=>"samaccountname","count"=>1,"dn"=>"CN=Administrateur,CN=Users,DC=mspr,DC=local"));
 
-    var_dump($adds);
+   // var_dump($adds);
     if (isset($_POST['btConnexion']) && $etape == 1){
         $email = $_POST['username']; // on recupere l'email saisie
         $utilisateur = new Utilisateur($db);
@@ -210,5 +210,19 @@ function actionAccueil($twig,$db){
     $form['valide'] = false;
     $form['message'] = 'Attention, votre localisation est reconnue hors de la France, votre connexion est donc bloquée';
 }
-    echo $twig->render('index.html.twig',array('form'=>$form,'etape'=>$etape));
+    echo $twig->render('connexion.html.twig',array('form'=>$form,'etape'=>$etape));
 }
+
+function actionMention($twig) {
+    echo $twig->render('mention.html.twig',array());
+}
+
+function actionaPropos($twig) {
+    echo $twig->render('aPropos.html.twig',array());
+}
+
+function actionAccueil($twig) {
+    echo $twig->render('accueil.html.twig',array());
+}
+
+

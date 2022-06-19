@@ -16,6 +16,58 @@
         {% block style %} {% endblock %}
     </head>
     <body class="bg-light">
+ <style type="text/css">
+
+     ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #0d47a1;
+    text-align: center;
+    }
+
+  li {
+    float: left;
+    display: block;
+    color: #FFFFFF;
+    text-align: center;
+    padding: 40px;
+    text-decoration: none;
+    font-size: large;
+  }
+
+  th {
+    text-align: center;
+
+  }
+  a{
+        color: #FFFFFF;
+  }
+
+  td {
+    text-align: center;
+  }
+
+  </style>
+	<ul class="nav justify-content-center">
+    <li style="color: #FFFFFF;"> Resilience34 </li>
+    </ul>
+    <ul class="nav justify-content-center">
+  		<li class="nav-item">
+    		<a class="nav-link" href="index.php?page=accueil" >Accueil</a>
+  		</li>
+		<li class="nav-item">
+    		<a class="nav-link" href="index.php?page=mention" >Mentions légales</a>
+  		</li>
+		<li class="nav-item">
+    		<a class="nav-link" href="index.php?page=aPropos">A propos</a>
+  		</li>
+		<li class="nav-item">
+    		<a class="nav-link" href="index.php?page=connexion">Se connecter</a>
+  		</li>
+	</ul>
+    
     {% block body %}
 
 
